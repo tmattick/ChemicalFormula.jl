@@ -1,0 +1,13 @@
+name = "ChemicalFormula"
+uuid = "069161ab-964a-4228-89a0-7a676f2e1f46"
+authors = ["Tim Mattick"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
