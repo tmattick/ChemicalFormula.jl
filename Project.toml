@@ -3,6 +3,10 @@ uuid = "069161ab-964a-4228-89a0-7a676f2e1f46"
 authors = ["Tim Mattick"]
 version = "0.1.0"
 
+[deps]
+PeriodicTable = "7b2266bf-644c-5ea3-82d8-af4bbd25a884"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
 [compat]
 julia = "1"
 
