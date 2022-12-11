@@ -8,6 +8,7 @@ PeriodicTable = "7b2266bf-644c-5ea3-82d8-af4bbd25a884"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
+Unitful = "1"
 PeriodicTable = "1"
 julia = "1"
 
