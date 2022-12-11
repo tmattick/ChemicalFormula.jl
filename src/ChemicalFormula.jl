@@ -20,7 +20,7 @@ Formula("H2O", Dict{PeriodicTable.Element, UInt32}(Element(Oxygen) => 0x00000001
 julia> Formula("SO4", -2)
 Formula("SO4", Dict{PeriodicTable.Element, UInt32}(Element(Sulfur) => 0x00000001, Element(Oxygen) => 0x00000004), -2, nothing)
 julia> Formula("Fe(CN)6*5H2O")
-Formula("Fe(CN)6*5H2O", Dict{PeriodicTable.Element, UInt32}(Element(Carbon) => 0x00000006, Element(Nitrogen) => 0x00000262, Element(Iron) => 0x00000001, Element(Oxygen) => 0x00000005), 0, nothing)
+Formula("Fe(CN)6*5H2O", Dict{PeriodicTable.Element, UInt32}(Element(Carbon) => 0x00000006, Element(Nitrogen) => 0x00000006, Element(Iron) => 0x00000001, Element(Oxygen) => 0x00000005, Element(Hydrogen) => 0x0000000a), 0, nothing)
 ```
 """
 struct Formula
