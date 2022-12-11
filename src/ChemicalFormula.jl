@@ -43,6 +43,57 @@ Formula(formula::AbstractString) = Formula(formula, parseformula(formula), 0, no
 
 ==(f1::Formula, f2::Formula) = f1.composition == f2.composition && f1.charge == f2.charge
 
+"Return the mass of one `formula` unit in unified atomic mass units ``u``."
+function formulamass(formula::Formula)
+    mass = 0.0u"u"
+    for (element, count) in formula.composition
+        mass += count * element.atomic_mass
+    end
+    return mass
+end
+
+"Return the molar mass of the `formula` in ``g mol⁻¹``."
+formulaweight(formula::Formula) = formulamass(formula) * 1u"g/(mol*u)"
+
+"Return the mass fraction for each element of the `formula` in a `element => fraction` Dict."
+function massfractions(formula::Formula)
+    totalmass = formulamass(formula)
+    fractions = Dict{Element,Float64}()
+    for (element, count) in formula.composition
+        fraction = (count * element.atomic_mass) / totalmass
+        fractions[element] = fraction
+    end
+    return fractions
+end
+
+"Return whether the `formula` is radioactive, i.e. contains radioactive elements."
+function radioactive(formula::Formula)
+    for element in keys(formula.composition)
+        if element.number >= 84 || element.number == 61 || element.number == 43
+            return true
+        end
+    end
+    return false
+end
+
+"Return whether the `formula` carries an electrical charge."
+charged(formula::Formula) = formula.charge != 0
+
+"Return formatted String of the `formula` `charge` (like 4+, 3-, +, ...)."
+function textcharge(formula::Formula)
+    if formula.charge == 0
+        return ""
+    elseif formula.charge == 1
+        return "+"
+    elseif formula.charge == -1
+        return "-"
+    elseif formula.charge > 0
+        return "$(formula.charge)+"
+    else
+        return "$(-formula.charge)-"
+    end
+end
+
 "Parse a formula String into a dictionary with corresponding element, count pairs."
 function parseformula(s::AbstractString)
     s = replace(s, " " => "")
