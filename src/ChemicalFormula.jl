@@ -1,6 +1,6 @@
 module ChemicalFormula
 
-export Formula
+export Formula, formulamass, formulaweight, massfractions, radioactive, charged, textcharge
 
 import Base.==
 using PeriodicTable, Unitful
