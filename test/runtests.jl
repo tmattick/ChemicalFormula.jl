@@ -28,6 +28,16 @@ using PeriodicTable, Unitful
     @test isnothing(cyanide.name)
 end
 
+@testset "equality" begin
+    @test Formula("H2O") == Formula("H2O")
+    @test Formula("NaCl") == Formula("ClNa")
+    @test Formula("CCl4", "tetrachloromethane") == Formula("CCl4", "carbon tetrachloride")
+    @test Formula("SO4", -2) == Formula("SO4", -2)
+    @test Formula("Fe") != Formula("Ni")
+    @test Formula("H2O") != Formula("OH")
+    @test Formula("Cs") != Formula("Cs", 1)
+end
+
 @testset "formulamass" begin
     @test formulamass(Formula("Fe")) ≈ 55.8452u"u"
     @test formulamass(Formula("PO4", -3)) ≈ 94.9697619985u"u"
