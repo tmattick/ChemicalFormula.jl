@@ -1,6 +1,16 @@
 module ChemicalFormula
 
-export Formula, formulamass, formulaweight, massfractions, radioactive, charged, textcharge
+export Formula,
+    sumformula,
+    hillformula,
+    unicode,
+    latex,
+    formulamass,
+    formulaweight,
+    massfractions,
+    radioactive,
+    charged,
+    textcharge
 
 import Base.==
 using PeriodicTable, Unitful
@@ -42,6 +52,128 @@ Formula(formula::AbstractString, name::AbstractString) =
 Formula(formula::AbstractString) = Formula(formula, parseformula(formula), 0, nothing)
 
 ==(f1::Formula, f2::Formula) = f1.composition == f2.composition && f1.charge == f2.charge
+
+"Give a collapsed sum formula with no special ordering and without charge."
+function sumformula(formula::Formula)
+    out = ""
+    for (element, count) in formula.composition
+        out *= element.symbol * (count == 1 ? "" : string(count))
+    end
+    return out
+end
+
+"Give a sum formula in Hill notation without charge."
+function hillformula(formula::Formula)
+    out = ""
+    elementssorted = sort(collect(keys(formula.composition)), by = e -> e.symbol)
+    if elements[:C] in elementssorted
+        out *=
+            "C" * (
+                formula.composition[elements[:C]] == 1 ? "" :
+                string(formula.composition[elements[:C]])
+            )
+        deleteat!(elementssorted, findall(x -> x == elements[:C], elementssorted))
+        if elements[:H] in elementssorted
+            out *=
+                "H" * (
+                    formula.composition[elements[:H]] == 1 ? "" :
+                    string(formula.composition[elements[:H]])
+                )
+            deleteat!(elementssorted, findall(x -> x == elements[:H], elementssorted))
+        end
+    end
+    for element in elementssorted
+        out *=
+            element.symbol *
+            (formula.composition[element] == 1 ? "" : string(formula.composition[element]))
+    end
+    return out
+end
+
+const displayforms = Dict(
+    "formula" => f -> f.formula,
+    "hill" => hillformula,
+    "hillformula" => hillformula,
+    "sum" => sumformula,
+    "sumformula" => sumformula,
+)
+
+"""
+Give a formula written in unicode characters. `includecharge` determines whether the 
+electronic charge should be given, defaults to `true`. `form` has to be one of `"formula"`
+(the `formula` that was given to construct the `Formula` object), `"hill"` or 
+`"hillformula"` for Hill notation or `"sum"` or `"sumformula"` for a collapsed sum 
+formula, defaults to `"formula"`.
+"""
+function unicode(formula::Formula, includecharge::Bool, form::AbstractString)
+    sub = Dict(
+        '0' => '₀',
+        '1' => '₁',
+        '2' => '₂',
+        '3' => '₃',
+        '4' => '₄',
+        '5' => '₅',
+        '6' => '₆',
+        '7' => '₇',
+        '8' => '₈',
+        '9' => '₉',
+    )
+    super = Dict(
+        '0' => '⁰',
+        '1' => '¹',
+        '2' => '²',
+        '3' => '³',
+        '4' => '⁴',
+        '5' => '⁵',
+        '6' => '⁶',
+        '7' => '⁷',
+        '8' => '⁸',
+        '9' => '⁹',
+        '+' => '⁺',
+        '-' => '⁻',
+    )
+
+    out = displayforms[form](formula)
+    out = replace(out, sub...)
+
+    if includecharge
+        charge = textcharge(formula)
+        charge = replace(charge, super...)
+        out *= charge
+    end
+
+    return out
+end
+
+unicode(formula::Formula, includecharge::Bool) = unicode(formula, includecharge, "formula")
+
+unicode(formula::Formula, form::AbstractString) = unicode(formula, true, form)
+
+unicode(formula::Formula) = unicode(formula, true, "formula")
+
+"""
+Give a formula written in LaTeX, using the mhchem package.. `includecharge` determines 
+whether the electronic charge should be given, defaults to `true`. `form` has to be one of 
+`"formula"` (the `formula` that was given to construct the `Formula` object), `"hill"` or 
+`"hillformula"` for Hill notation or `"sum"` or `"sumformula"` for a collapsed sum 
+formula, defaults to `"formula"`.
+"""
+function latex(formula::Formula, includecharge::Bool, form::AbstractString)
+    out = "\\ce{" * displayforms[form](formula)
+
+    if includecharge
+        charge = textcharge(formula)
+        out *= charge == "" ? "" : "^{$charge}"
+    end
+
+    return out * "}"
+end
+
+latex(formula::Formula, includecharge::Bool) = latex(formula, includecharge, "formula")
+
+latex(formula::Formula, form::AbstractString) = latex(formula, true, form)
+
+latex(formula::Formula) = latex(formula, true, "formula")
 
 "Return the mass of one `formula` unit in unified atomic mass units ``u``."
 function formulamass(formula::Formula)
