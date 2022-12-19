@@ -13,7 +13,9 @@ export Formula,
     textcharge
 
 import Base.==
-using PeriodicTable, Unitful
+using Unitful
+include("elements.jl")
+using .Elements
 
 """
     Formula(formula[, composition], charge=0, name=nothing)
@@ -21,21 +23,21 @@ using PeriodicTable, Unitful
 Represent a chemical `formula` with an electrical `charge` and an optional `name`.
 The `composition` is automatically determined from the specified `formula`. Compounds can
 be grouped with parentheses, coordinating molecules can be annotated with a *. Elements are
-represented by the `PeriodicTable.Element` type.
+represented by `Symbol`s.
 
 # Examples
 ```julia-repl
 julia> Formula("H2O", "water")
-Formula("H2O", Dict{PeriodicTable.Element, UInt32}(Element(Oxygen) => 0x00000001, Element(Hydrogen) => 0x00000002), 0, "water")
+Formula("H2O", Dict{Symbol, Int32}(:H => 2, :O => 1), 0, "water")
 julia> Formula("SO4", -2)
-Formula("SO4", Dict{PeriodicTable.Element, UInt32}(Element(Sulfur) => 0x00000001, Element(Oxygen) => 0x00000004), -2, nothing)
+Formula("SO4", Dict{Symbol, Int32}(:S => 1, :O => 4), -2, nothing)
 julia> Formula("Fe(CN)6*5H2O")
-Formula("Fe(CN)6*5H2O", Dict{PeriodicTable.Element, UInt32}(Element(Carbon) => 0x00000006, Element(Nitrogen) => 0x00000006, Element(Iron) => 0x00000001, Element(Oxygen) => 0x00000005, Element(Hydrogen) => 0x0000000a), 0, nothing)
+Formula("Fe(CN)6*5H2O", Dict{Symbol, Int32}(:N => 6, :Fe => 1, :H => 10, :O => 5, :C => 6), 0, nothing)
 ```
 """
 struct Formula
     formula::AbstractString
-    composition::Dict{Element,UInt32}
+    composition::Dict{Symbol,Int32}
     charge::Int8
     name::Union{AbstractString,Nothing}
 end
@@ -57,7 +59,7 @@ Formula(formula::AbstractString) = Formula(formula, parseformula(formula), 0, no
 function sumformula(formula::Formula)
     out = ""
     for (element, count) in formula.composition
-        out *= element.symbol * (count == 1 ? "" : string(count))
+        out *= string(element) * (count == 1 ? "" : string(count))
     end
     return out
 end
@@ -65,26 +67,19 @@ end
 "Give a sum formula in Hill notation without charge."
 function hillformula(formula::Formula)
     out = ""
-    elementssorted = sort(collect(keys(formula.composition)), by = e -> e.symbol)
-    if elements[:C] in elementssorted
-        out *=
-            "C" * (
-                formula.composition[elements[:C]] == 1 ? "" :
-                string(formula.composition[elements[:C]])
-            )
-        deleteat!(elementssorted, findall(x -> x == elements[:C], elementssorted))
-        if elements[:H] in elementssorted
+    elementssorted = sort(collect(keys(formula.composition)))
+    if :C in elementssorted
+        out *= "C" * (formula.composition[:C] == 1 ? "" : string(formula.composition[:C]))
+        deleteat!(elementssorted, findall(x -> x === :C, elementssorted))
+        if :H in elementssorted
             out *=
-                "H" * (
-                    formula.composition[elements[:H]] == 1 ? "" :
-                    string(formula.composition[elements[:H]])
-                )
-            deleteat!(elementssorted, findall(x -> x == elements[:H], elementssorted))
+                "H" * (formula.composition[:H] == 1 ? "" : string(formula.composition[:H]))
+            deleteat!(elementssorted, findall(x -> x === :H, elementssorted))
         end
     end
     for element in elementssorted
         out *=
-            element.symbol *
+            string(element) *
             (formula.composition[element] == 1 ? "" : string(formula.composition[element]))
     end
     return out
@@ -152,7 +147,7 @@ unicode(formula::Formula, form::AbstractString) = unicode(formula, true, form)
 unicode(formula::Formula) = unicode(formula, true, "formula")
 
 """
-Give a formula written in LaTeX, using the mhchem package.. `includecharge` determines 
+Give a formula written in LaTeX, using the mhchem package. `includecharge` determines 
 whether the electronic charge should be given, defaults to `true`. `form` has to be one of 
 `"formula"` (the `formula` that was given to construct the `Formula` object), `"hill"` or 
 `"hillformula"` for Hill notation or `"sum"` or `"sumformula"` for a collapsed sum 
@@ -175,24 +170,27 @@ latex(formula::Formula, form::AbstractString) = latex(formula, true, form)
 
 latex(formula::Formula) = latex(formula, true, "formula")
 
-"Return the mass of one `formula` unit in unified atomic mass units ``u``."
-function formulamass(formula::Formula)
-    mass = 0.0u"u"
+"Return the mass of one `formula` without specified unit."
+function mass_wo_unit(formula::Formula)
+    mass = 0.0
     for (element, count) in formula.composition
-        mass += count * element.atomic_mass
+        mass += count * atomicmass[element]
     end
     return mass
 end
 
+"Return the mass of one `formula` unit in unified atomic mass units ``u``."
+formulamass(formula::Formula) = mass_wo_unit(formula) * 1u"u"
+
 "Return the molar mass of the `formula` in ``g mol⁻¹``."
-formulaweight(formula::Formula) = formulamass(formula) * 1u"g/(mol*u)"
+formulaweight(formula::Formula) = mass_wo_unit(formula) * 1u"g/mol"
 
 "Return the mass fraction for each element of the `formula` in a `element => fraction` Dict."
 function massfractions(formula::Formula)
-    totalmass = formulamass(formula)
-    fractions = Dict{Element,Float64}()
+    totalmass = mass_wo_unit(formula)
+    fractions = Dict{Symbol,Float64}()
     for (element, count) in formula.composition
-        fraction = (count * element.atomic_mass) / totalmass
+        fraction = (count * atomicmass[element]) / totalmass
         fractions[element] = fraction
     end
     return fractions
@@ -201,7 +199,8 @@ end
 "Return whether the `formula` is radioactive, i.e. contains radioactive elements."
 function radioactive(formula::Formula)
     for element in keys(formula.composition)
-        if element.number >= 84 || element.number == 61 || element.number == 43
+        elementnumber = atomicnumbers[element]
+        if elementnumber >= 84 || elementnumber == 61 || elementnumber == 43
             return true
         end
     end
@@ -231,10 +230,10 @@ function parseformula(s::AbstractString)
     s = replace(s, " " => "")
     s = removestar(s)
     s = removebrackets(s)
-    composition = Dict{Element,UInt32}()
+    composition = Dict{Symbol,Int32}()
     for m in eachmatch(r"(?<element>[A-Z][a-z]?)(?<count>\d*)", s)
-        element = elements[Symbol(m["element"])]
-        num = m["count"] == "" ? one(UInt32) : parse(UInt32, m["count"])
+        element = Symbol(m["element"])
+        num = m["count"] == "" ? one(Int32) : parse(Int32, m["count"])
         if element in keys(composition)
             composition[element] += num
         else

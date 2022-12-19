@@ -1,29 +1,23 @@
 using ChemicalFormula
 using Test
-using PeriodicTable, Unitful
+using Unitful
 
 @testset "Constructor" begin
     water = Formula("H2O", "water")
     @test water.charge == 0
-    @test water.composition == Dict(elements[:H] => 2, elements[:O] => 1)
+    @test water.composition == Dict(:H => 2, :O => 1)
     @test water.formula == "H2O"
     @test water.name == "water"
 
     sulfate = Formula("SO4", -2)
     @test sulfate.charge == -2
-    @test sulfate.composition == Dict(elements[:S] => 1, elements[:O] => 4)
+    @test sulfate.composition == Dict(:S => 1, :O => 4)
     @test sulfate.formula == "SO4"
     @test isnothing(sulfate.name)
 
     cyanide = Formula("Fe(CN)6*5H2O")
     @test cyanide.charge == 0
-    @test cyanide.composition == Dict(
-        elements[:Fe] => 1,
-        elements[:C] => 6,
-        elements[:N] => 6,
-        elements[:H] => 10,
-        elements[:O] => 5,
-    )
+    @test cyanide.composition == Dict(:Fe => 1, :C => 6, :N => 6, :H => 10, :O => 5)
     @test cyanide.formula == "Fe(CN)6*5H2O"
     @test isnothing(cyanide.name)
 end
@@ -59,25 +53,41 @@ end
     @test unicode(Formula("C2H4"), "sum") in Set(["C₂H₄", "H₄C₂"])
     @test unicode(Formula("Fe(CN)6", -3), false) == "Fe(CN)₆"
     @test unicode(Formula("Fe(CN)6", -3)) == "Fe(CN)₆³⁻"
-    @test unicode(Formula("Fe(CN)6", -3), false, "sum") in Set(["FeC₆N₆", "FeN₆C₆", "C₆FeN₆", "C₆N₆Fe", "N₆FeC₆", "N₆C₆Fe"])
-    @test unicode(Formula("Fe(CN)6", -3), "sum") in Set(["FeC₆N₆³⁻", "FeN₆C₆³⁻", "C₆FeN₆³⁻", "C₆N₆Fe³⁻", "N₆FeC₆³⁻", "N₆C₆Fe³⁻"])
+    @test unicode(Formula("Fe(CN)6", -3), false, "sum") in
+          Set(["FeC₆N₆", "FeN₆C₆", "C₆FeN₆", "C₆N₆Fe", "N₆FeC₆", "N₆C₆Fe"])
+    @test unicode(Formula("Fe(CN)6", -3), "sum") in
+          Set(["FeC₆N₆³⁻", "FeN₆C₆³⁻", "C₆FeN₆³⁻", "C₆N₆Fe³⁻", "N₆FeC₆³⁻", "N₆C₆Fe³⁻"])
     @test unicode(Formula("H4C2"), "hill") == "C₂H₄"
     @test unicode(Formula("H3O6C6F3", -3), "hill") == "C₆H₃F₃O₆³⁻"
 end
 
 @testset "latex" begin
     @test latex(Formula("C2H4")) == raw"\ce{C2H4}"
-    @test latex(Formula("C2H4"), "sum") in Set([raw"\ce{C2H4}", raw"\ce{C2H4}"])
+    @test latex(Formula("C2H4"), "sum") in Set([raw"\ce{C2H4}", raw"\ce{H4C2}"])
     @test latex(Formula("Fe(CN)6", -3), false) == raw"\ce{Fe(CN)6}"
     @test latex(Formula("Fe(CN)6", -3)) == raw"\ce{Fe(CN)6^{3-}}"
-    @test latex(Formula("Fe(CN)6", -3), false, "sum") in Set([raw"\ce{FeC6N6}", raw"\ce{FeN6C6}", raw"\ce{C6FeN6}", raw"\ce{C6N6Fe}", raw"\ce{N6FeC6}", raw"\ce{N6C6Fe}"])
-    @test latex(Formula("Fe(CN)6", -3), "sum") in Set([raw"\ce{FeC6N6^{3-}}", raw"\ce{FeN6C6^{3-}}", raw"\ce{C6FeN6^{3-}}", raw"\ce{C6N6Fe^{3-}}", raw"\ce{N6FeC6^{3-}}", raw"\ce{N6C6Fe^{3-}}"])
+    @test latex(Formula("Fe(CN)6", -3), false, "sum") in Set([
+        raw"\ce{FeC6N6}",
+        raw"\ce{FeN6C6}",
+        raw"\ce{C6FeN6}",
+        raw"\ce{C6N6Fe}",
+        raw"\ce{N6FeC6}",
+        raw"\ce{N6C6Fe}",
+    ])
+    @test latex(Formula("Fe(CN)6", -3), "sum") in Set([
+        raw"\ce{FeC6N6^{3-}}",
+        raw"\ce{FeN6C6^{3-}}",
+        raw"\ce{C6FeN6^{3-}}",
+        raw"\ce{C6N6Fe^{3-}}",
+        raw"\ce{N6FeC6^{3-}}",
+        raw"\ce{N6C6Fe^{3-}}",
+    ])
     @test latex(Formula("H4C2"), "hill") == raw"\ce{C2H4}"
     @test latex(Formula("H3O6C6F3", -3), "hill") == raw"\ce{C6H3F3O6^{3-}}"
 end
 
 @testset "formulamass" begin
-    @test formulamass(Formula("Fe")) ≈ 55.8452u"u"
+    @test formulamass(Formula("Fe")) ≈ 55.845u"u"
     @test formulamass(Formula("PO4", -3)) ≈ 94.9697619985u"u"
     @test formulamass(Formula("C2H6", "ethane")) ≈ 30.07u"u"
 end
@@ -89,11 +99,11 @@ end
 end
 
 @testset "massfractions" begin
-    @test massfractions(Formula("C")) == Dict(elements[:C] => 1.0)
+    @test massfractions(Formula("C")) == Dict(:C => 1.0)
     @test massfractions(Formula("NaCl")) ==
-          Dict(elements[:Na] => 0.39339254012217784, elements[:Cl] => 0.6066074598778223)
+          Dict(:Na => 0.3933925401014177, :Cl => 0.6066074598985822)
     @test massfractions(Formula("C2H4")) ==
-          Dict(elements[:C] => 0.8562771797248164, elements[:H] => 0.14372282027518357)
+          Dict(:C => 0.8562771797248164, :H => 0.14372282027518357)
 end
 
 @testset "radioactive" begin
