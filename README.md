@@ -12,7 +12,7 @@ generate formatted strings (text, Unicode and LaTeX) in various styles.
 In addition, ChemicalFormula.jl offers the calculation of formula weights and thus enables 
 further stochiometric calculations. The atomic weights correspond to the specifications of 
 the IUPAC Commission for Isotope abundances and atomic weights. The values are taken from 
-[https://iupac.qmul.ac.uk/AtWt/].
+https://iupac.qmul.ac.uk/AtWt/.
 
 ## Examples
 
