@@ -55,7 +55,7 @@ Formula(formula::AbstractString) = Formula(formula, parseformula(formula), 0, no
 
 ==(f1::Formula, f2::Formula) = f1.composition == f2.composition && f1.charge == f2.charge
 
-"Give a collapsed sum formula with no special ordering and without charge."
+"Give a collapsed sum formula with no special ordering and without charge as unformatted text."
 function sumformula(formula::Formula)
     out = ""
     for (element, count) in formula.composition
@@ -64,7 +64,7 @@ function sumformula(formula::Formula)
     return out
 end
 
-"Give a sum formula in Hill notation without charge."
+"Give a sum formula in Hill notation without charge as unformatted text."
 function hillformula(formula::Formula)
     out = ""
     elementssorted = sort(collect(keys(formula.composition)))
@@ -185,7 +185,7 @@ formulamass(formula::Formula) = mass_wo_unit(formula) * 1u"u"
 "Return the molar mass of the `formula` in ``g mol⁻¹``."
 formulaweight(formula::Formula) = mass_wo_unit(formula) * 1u"g/mol"
 
-"Return the mass fraction for each element of the `formula` in a `element => fraction` Dict."
+"Return the mass fraction for each element of the `formula` in a `element => fraction` `Dict`."
 function massfractions(formula::Formula)
     totalmass = mass_wo_unit(formula)
     fractions = Dict{Symbol,Float64}()
@@ -210,7 +210,7 @@ end
 "Return whether the `formula` carries an electrical charge."
 charged(formula::Formula) = formula.charge != 0
 
-"Return formatted String of the `formula` `charge` (like 4+, 3-, +, ...)."
+"Return formatted `String` of the `formula` `charge` (like 4+, 3-, +, ...)."
 function textcharge(formula::Formula)
     if formula.charge == 0
         return ""
@@ -225,7 +225,7 @@ function textcharge(formula::Formula)
     end
 end
 
-"Parse a formula String into a dictionary with corresponding element, count pairs."
+"Parse a formula `String` into a `Dict` with corresponding element, count pairs."
 function parseformula(s::AbstractString)
     s = replace(s, " " => "")
     s = removestar(s)
@@ -243,7 +243,7 @@ function parseformula(s::AbstractString)
     return composition
 end
 
-"Remove * characters in a formula string by rewriting the string as a single molecule formula."
+"Remove '*' `char`s in a formula `String` by rewriting the `String` as a single molecule formula."
 function removestar(s::AbstractString)
     if !occursin('*', s)
         return s
