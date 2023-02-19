@@ -45,9 +45,9 @@ massfractions
 ## Utility functions
 
 ```@docs
-charged
+ischarged
 ```
 
 ```@docs
-radioactive
+isradioactive
 ```

@@ -34,16 +34,16 @@ julia> perfluorotrimesate = Formula("H3O6C6F3", -3)
 Formula("H3O6C6F3", Dict{Symbol, Int32}(:F => 3, :H => 3, :O => 6, :C => 6), -3, nothing)
 julia> unicode(perfluorotrimesate, "hill")
 "C₆H₃F₃O₆³⁻"
-julia> charged(perfluorotrimesate)
+julia> ischarged(perfluorotrimesate)
 true
 julia> cyanide = Formula("K4Fe(CN)6")
 Formula("K4Fe(CN)6", Dict{Symbol, Int32}(:N => 6, :Fe => 1, :K => 4, :C => 6), 0, nothing)
 julia> latex(cyanide, "sum")
 "\\ce{N6FeK4C6}"
-julia> charged(cyanide)
+julia> ischarged(cyanide)
 false
 julia> uranyl = Formula("UO2F2*H2O")
 Formula("UO2F2*H2O", Dict{Symbol, Int32}(:U => 1, :F => 2, :H => 2, :O => 3), 0, nothing)
-julia> radioactive(uranyl)
+julia> isradioactive(uranyl)
 true
 ```

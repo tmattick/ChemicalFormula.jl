@@ -106,17 +106,17 @@ end
           Dict(:C => 0.8562771797248164, :H => 0.14372282027518357)
 end
 
-@testset "radioactive" begin
-    @test radioactive(Formula("Ra")) == true
-    @test radioactive(Formula("Mn")) == false
-    @test radioactive(Formula("TbUC2")) == true
-    @test radioactive(Formula("Fe(CN)6")) == false
+@testset "isradioactive" begin
+    @test isradioactive(Formula("Ra")) == true
+    @test isradioactive(Formula("Mn")) == false
+    @test isradioactive(Formula("TbUC2")) == true
+    @test isradioactive(Formula("Fe(CN)6")) == false
 end
 
-@testset "charged" begin
-    @test charged(Formula("H2O")) == false
-    @test charged(Formula("Na", 1)) == true
-    @test charged(Formula("S", -2)) == true
+@testset "ischarged" begin
+    @test ischarged(Formula("H2O")) == false
+    @test ischarged(Formula("Na", 1)) == true
+    @test ischarged(Formula("S", -2)) == true
 end
 
 @testset "textcharge" begin

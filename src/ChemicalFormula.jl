@@ -8,8 +8,8 @@ export Formula,
     formulamass,
     formulaweight,
     massfractions,
-    radioactive,
-    charged,
+    isradioactive,
+    ischarged,
     textcharge
 
 import Base.==
@@ -201,7 +201,7 @@ function massfractions(formula::Formula)
 end
 
 "Return whether the `formula` is radioactive, i.e. contains radioactive elements."
-function radioactive(formula::Formula)
+function isradioactive(formula::Formula)
     for element in keys(formula.composition)
         elementnumber = atomicnumbers[element]
         if elementnumber >= 84 || elementnumber == 61 || elementnumber == 43
@@ -212,7 +212,7 @@ function radioactive(formula::Formula)
 end
 
 "Return whether the `formula` carries an electrical charge."
-charged(formula::Formula) = formula.charge != 0
+ischarged(formula::Formula) = formula.charge != 0
 
 "Return formatted `String` of the `formula` `charge` (like 4+, 3-, +, ...)."
 function textcharge(formula::Formula)
