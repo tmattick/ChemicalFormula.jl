@@ -14,6 +14,14 @@ further stochiometric calculations. The atomic weights correspond to the specifi
 the IUPAC Commission for Isotope abundances and atomic weights. The values are taken from 
 https://iupac.qmul.ac.uk/AtWt/.
 
+## Installation
+
+ChemicalFormula can be installed using the package manager. Enter the Pkg REPL mode by 
+typing `]` in the REPL and run
+```
+pkg> add ChemicalFormula
+```
+
 ## Examples
 
 ```julia-repl
