@@ -231,9 +231,7 @@ end
 
 "Parse a formula `String` into a `Dict` with corresponding element, count pairs."
 function parseformula(s::AbstractString)
-    s = replace(s, " " => "")
-    s = removestar(s)
-    s = removebrackets(s)
+    s = reduceformula(s)
     composition = Dict{Symbol,Int32}()
     for m in eachmatch(r"(?<element>[A-Z][a-z]?)(?<count>\d*)", s)
         element = Symbol(m["element"])
@@ -245,6 +243,15 @@ function parseformula(s::AbstractString)
         end
     end
     return composition
+end
+
+"Reduces a formula `String` by removing whitespace, subscripts, asterisks and parentheses."
+function reduceformula(s::AbstractString)
+    s = replace(s, r"\s" => "")
+    s = subscripttonormal(s)
+    s = removestar(s)
+    s = removebrackets(s)
+    return s
 end
 
 "Remove '*' `char`s in a formula `String` by rewriting the `String` as a single molecule formula."
