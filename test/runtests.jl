@@ -20,6 +20,36 @@ using Unitful
     @test cyanide.composition == Dict(:Fe => 1, :C => 6, :N => 6, :H => 10, :O => 5)
     @test cyanide.formula == "Fe(CN)6*5H2O"
     @test isnothing(cyanide.name)
+
+    nitrate = Formula("NO₃⁻")
+    @test nitrate.charge == -1
+    @test nitrate.composition == Dict(:N => 1, :O => 3)
+    @test nitrate.formula == "NO₃⁻"
+    @test isnothing(nitrate.name)
+
+    phosphate = Formula("PO4³⁻", "phosphate")
+    @test phosphate.charge == -3
+    @test phosphate.composition == Dict(:P => 1, :O => 4)
+    @test phosphate.formula == "PO4³⁻"
+    @test phosphate.name == "phosphate"
+
+    korund = Formula("Al₂O₃")
+    @test korund.charge == 0
+    @test korund.composition == Dict(:Al => 2, :O => 3)
+    @test korund.formula == "Al₂O₃"
+    @test isnothing(korund.name)
+
+    calcium = Formula("Ca²⁺")
+    @test calcium.charge == 2
+    @test calcium.composition == Dict(:Ca => 1)
+    @test calcium.formula == "Ca²⁺"
+    @test isnothing(calcium.name)
+
+    potassium = Formula("K⁺")
+    @test potassium.charge == 1
+    @test potassium.composition == Dict(:K => 1)
+    @test potassium.formula == "K⁺"
+    @test isnothing(potassium.name)
 end
 
 @testset "equality" begin

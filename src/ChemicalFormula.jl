@@ -26,6 +26,8 @@ Represent a chemical `formula` with an electrical `charge` and an optional `name
 The `composition` is automatically determined from the specified `formula`. Compounds can
 be grouped with parentheses, coordinating molecules can be annotated with a *. Elements are
 represented by `Symbol`s.
+If the `charge` is not specified, it is determined from the charge in superscript 
+within the `formula`.
 
 # Examples
 ```julia-repl
@@ -35,6 +37,8 @@ julia> Formula("SO4", -2)
 Formula("SO4", Dict{Symbol, Int32}(:S => 1, :O => 4), -2, nothing)
 julia> Formula("Fe(CN)6*5H2O")
 Formula("Fe(CN)6*5H2O", Dict{Symbol, Int32}(:N => 6, :Fe => 1, :H => 10, :O => 5, :C => 6), 0, nothing)
+julia> Formula("SO₄²⁻")
+Formula("SO₄²⁻", Dict{Symbol, Int32}(:S => 1, :O => 4), -2, nothing)
 ```
 """
 struct Formula
@@ -50,10 +54,15 @@ Formula(formula::AbstractString, charge::Integer, name::AbstractString) =
 Formula(formula::AbstractString, charge::Integer) =
     Formula(formula, parseformula(formula), charge, nothing)
 
-Formula(formula::AbstractString, name::AbstractString) =
-    Formula(formula, parseformula(formula), 0, name)
+function Formula(formula::AbstractString, name::AbstractString)
+    (composition, charge) = parseformulawithcharge(formula)
+    return Formula(formula, composition, charge, name)
+end
 
-Formula(formula::AbstractString) = Formula(formula, parseformula(formula), 0, nothing)
+function Formula(formula::AbstractString)
+    (composition, charge) = parseformulawithcharge(formula)
+    return Formula(formula, composition, charge, nothing)
+end
 
 ==(f1::Formula, f2::Formula) = f1.composition == f2.composition && f1.charge == f2.charge
 
@@ -245,6 +254,38 @@ function parseformula(s::AbstractString)
         end
     end
     return composition
+end
+
+"""
+Parse a formula `String` into a `Dict` with corresponding element, count pairs while parsing
+the `charge` from superscript. Defaults to `parsefomula(s)` if no superscript is present.
+"""
+function parseformulawithcharge(s::AbstractString)
+    s = reduceformula(s)
+
+    charge = zero(Int8)
+    i = 1
+    if issuperscript(s[end])
+        while i <= length(s) && !issuperscript(s[i])
+            i += 1
+        end
+        charge = parsecharge(s[i:end])
+    else
+        return parseformula(s), zero(Int8)
+    end
+
+    s = s[1:i-1]
+    composition = Dict{Symbol,Int32}()
+    for m in eachmatch(r"(?<element>[A-Z][a-z]?)(?<count>\d*)", s)
+        element = Symbol(m["element"])
+        num = m["count"] == "" ? one(Int32) : parse(Int32, m["count"])
+        if element in keys(composition)
+            composition[element] += num
+        else
+            composition[element] = num
+        end
+    end
+    return composition, charge
 end
 
 "Reduces a formula `String` by removing whitespace, subscripts, asterisks and parentheses."
