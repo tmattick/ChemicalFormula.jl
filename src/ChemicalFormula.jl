@@ -16,6 +16,8 @@ import Base.==
 using Unitful
 include("elements.jl")
 using .Elements
+include("subsuperscript.jl")
+using .SubSuperScript
 
 """
     Formula(formula[, composition], charge=0, name=nothing)
@@ -294,6 +296,23 @@ function removebrackets(s::AbstractString)
         innerformula *= comp["element"] * string(frequency * innermultiplier)
     end
     return removebrackets(beforebrackets * innerformula * afterbrackets)
+end
+
+"Parse the charge of a formula given in superscript."
+function parsecharge(s::AbstractString)
+    s = superscripttonormal(s)
+    if s == "+"
+        return one(Int8)
+    elseif s == "-"
+        return -one(Int8)
+    else
+        numcharge = parse(Int8, s[1:end-1])
+        if s[end] == '+'
+            return numcharge
+        else
+            return -numcharge
+        end
+    end
 end
 
 end
