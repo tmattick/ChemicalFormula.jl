@@ -141,7 +141,7 @@ function unicode(formula::Formula, includecharge::Bool, form::AbstractString)
         '-' => '⁻',
     )
 
-    out = displayforms[form](formula)
+    out::String = displayforms[form](formula)
     out = replace(out, sub...)
 
     if includecharge
@@ -169,7 +169,7 @@ whether the electronic charge should be given, defaults to `true`. `form` has to
 formula, defaults to `"formula"`.
 """
 function latex(formula::Formula, includecharge::Bool, form::AbstractString)
-    out = "\\ce{" * displayforms[form](formula)
+    out::String = "\\ce{" * displayforms[form](formula)
 
     if includecharge
         charge = textcharge(formula)
