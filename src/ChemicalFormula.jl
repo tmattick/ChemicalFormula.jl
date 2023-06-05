@@ -20,14 +20,14 @@ include("subsuperscript.jl")
 using .SubSuperScript
 
 """
-    Formula(formula[, composition], charge=0, name=nothing)
+    Formula(formula[, composition][, charge], name=nothing)
 
 Represent a chemical `formula` with an electrical `charge` and an optional `name`.
 The `composition` is automatically determined from the specified `formula`. Compounds can
 be grouped with parentheses, coordinating molecules can be annotated with a *. Elements are
 represented by `Symbol`s.
 If the `charge` is not specified, it is determined from the charge in superscript 
-within the `formula`.
+within the `formula`. Defaults to 0.
 
 # Examples
 ```julia-repl
